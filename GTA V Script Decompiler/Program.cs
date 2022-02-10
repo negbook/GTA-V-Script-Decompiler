@@ -90,7 +90,7 @@ namespace Decompiler
 					return;
 				}
 				Console.WriteLine("Decompiled in " + (DateTime.Now - Start).ToString());
-				fileopen.Save(File.OpenWrite(args[0] + ".c"), true);
+				fileopen.Save(File.OpenWrite(args[0] + ".lua"), true);
 				Console.WriteLine("Extracing native table...");
 				StreamWriter fw = new StreamWriter(File.OpenWrite(args[0] + " native table.txt"));
 				foreach (ulong nat in fileopen.X64NativeTable._nativehash)

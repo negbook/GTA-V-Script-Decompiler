@@ -317,7 +317,7 @@ namespace Decompiler
 					else datatype = "struct<" + var.Immediatesize.ToString() + ">[] ";
 				}
 				//decl += datatype + "Param" + i.ToString() + ", ";
-				decl +=  "p" + i.ToString() + ", ";
+				decl +=  "p_" + i.ToString() + ", ";
 				i++;
 			}
 			if (decl.Length > 2)

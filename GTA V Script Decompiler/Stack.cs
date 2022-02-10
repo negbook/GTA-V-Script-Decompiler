@@ -283,7 +283,7 @@ namespace Decompiler
 			if (val.ItemType == StackValue.Type.Pointer)
 				return val.Value;
 			else if (val.ItemType == StackValue.Type.Literal)
-				return "*(" + val.Value + ")";
+				return "--[=[*--]=](" + val.Value + ")";
 			throw new Exception("Not a pointer item recieved");
 		}
 
@@ -308,7 +308,7 @@ namespace Decompiler
 			if (val.ItemType == StackValue.Type.Pointer)
 				return val.Value;
 			else if (val.ItemType == StackValue.Type.Literal)
-				return "*" + (val.Value.Contains(" ") ? "(" + val.Value + ")" : val.Value);
+				return "--[=[*--]=]" + (val.Value.Contains(" ") ? "(" + val.Value + ")" : val.Value);
 			throw new Exception("Not a pointer item recieved");
 		}
 
