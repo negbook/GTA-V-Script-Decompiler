@@ -310,7 +310,7 @@ namespace Decompiler
 			OuterSwitch = new SwitchStatement(null, -1);
 
 			sb = new StringBuilder();
-			opentab();
+			opentab(false);
 			Offset = 0;
 
 			//write all the function variables declared by the function
@@ -349,7 +349,7 @@ namespace Decompiler
 			{
 				writeelse = false;
 				writeline("else");
-				opentab(true);
+				opentab(false);
 			}
 			AppendLine(tabs + line);
 		}
