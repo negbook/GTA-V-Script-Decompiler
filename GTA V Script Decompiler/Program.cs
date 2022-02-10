@@ -23,15 +23,15 @@ namespace Decompiler
 			if (!File.Exists(Config.path))
 			{
 				Config.IniWriteValue("Base", "IntStyle", "int");
-				Config.IniWriteBool("Base", "Show_Array_Size", true);
+				Config.IniWriteBool("Base", "Show_Array_Size", false);
 				Config.IniWriteBool("Base", "Reverse_Hashes", true);
 				Config.IniWriteBool("Base", "Declare_Variables", true);
 				Config.IniWriteBool("Base", "Shift_Variables", true);
-				Config.IniWriteBool("View", "Show_Nat_Namespace", true);
+				Config.IniWriteBool("View", "Show_Nat_Namespace", false);
 				Config.IniWriteBool("Base", "Show_Func_Pointer", false);
-				Config.IniWriteBool("Base", "Use_MultiThreading", false);
+				Config.IniWriteBool("Base", "Use_MultiThreading", true);
 				Config.IniWriteBool("Base", "Include_Function_Position", false);
-				Config.IniWriteBool("Base", "Uppercase_Natives", false);
+				Config.IniWriteBool("Base", "Uppercase_Natives", true);
 				Config.IniWriteBool("Base", "Hex_Index", false);
 				Config.IniWriteBool("View", "Line_Numbers", true);
 			}

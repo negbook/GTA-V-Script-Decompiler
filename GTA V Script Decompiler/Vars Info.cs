@@ -70,17 +70,20 @@ namespace Decompiler
             {
                 name = Types.gettype(var.DataType).varletter;
             }
-            /*else if (var.Immediatesize == 3)
+			/*else if (var.Immediatesize == 3)
             {
                 name = "v";
             }*/
+			name = "";
 
-            switch (Listtype)
+			switch (Listtype)
             {
                 case ListType.Statics: name += (index >= scriptParamStart ? "ScriptParam_" : "Local_"); break;
-                case ListType.Vars: name += "Var"; break;
-                case ListType.Params: name += "Param"; break;
-            }
+				//case ListType.Vars: name += "Var"; break;
+				case ListType.Vars: name += "v_"; break;
+                //case ListType.Params: name += "Param"; break;
+				case ListType.Params: name += "p_"; break;
+			}
 
             try
             {
@@ -118,7 +121,8 @@ namespace Decompiler
 						varlocation =  (i >= scriptParamStart ? "ScriptParam_" : "Local_");
 						break;
 					case ListType.Vars:
-						varlocation = "Var";
+						//varlocation = "Var";
+						varlocation = "v_";
 						break;
 					case ListType.Params:
 						throw new DecompilingException("Parameters have different declaration");
@@ -147,11 +151,13 @@ namespace Decompiler
 				}*/
 				else if (var.DataType == Stack.DataType.String)
 				{
-					datatype = "char c";
+					//datatype = "char c";
+					datatype = "local ";
 				}
 				else
 				{
-					datatype = "struct<" + var.Immediatesize.ToString() + "> ";
+					//datatype = "struct<" + var.Immediatesize.ToString() + "> ";
+					datatype = "local ";
 				}
 				string value = "";
 				if (!var.Is_Array)
@@ -310,7 +316,8 @@ namespace Decompiler
 					}*/
 					else datatype = "struct<" + var.Immediatesize.ToString() + ">[] ";
 				}
-				decl += datatype + "Param" + i.ToString() + ", ";
+				//decl += datatype + "Param" + i.ToString() + ", ";
+				decl +=  "p" + i.ToString() + ", ";
 				i++;
 			}
 			if (decl.Length > 2)

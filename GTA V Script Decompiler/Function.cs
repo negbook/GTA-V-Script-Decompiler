@@ -102,7 +102,8 @@ namespace Decompiler
 
 			//extract return type of function
 			if (Rcount == 0)
-				working = "void ";
+				working = "function ";
+			//working = "void ";
 			else if (Rcount == 1)
 			{
 				working = ReturnType.returntype;
@@ -139,8 +140,10 @@ namespace Decompiler
 					working = "struct<" + Rcount.ToString() + "> ";
 				}*/
 			}
+			//negbook 
+			
 			else throw new DecompilingException("Unexpected return count");
-
+			working = "local ";
 			name = working + Name;
 			working = "(" + Params.GetPDec() + ")";
 
@@ -235,9 +238,42 @@ namespace Decompiler
 				tabs = tabs.Remove(tabs.Length - 1);
 			}
 			if (write)
-				writeline("}");
+				//writeline("}");
+				writeline("end");
 		}
 
+		void cloasetabswitchlua(bool write = true)
+		{
+
+			if (tabs.Length > 0)
+			{
+				tabs = tabs.Remove(tabs.Length - 1);
+			}
+			if (write)
+				//writeline("}");
+
+			writeline(")");
+		}
+		
+		void closetabcaselua(bool notTheEnd = true)
+		{
+			
+			if (tabs.Length > 0)
+			{
+				tabs = tabs.Remove(tabs.Length - 1);
+			}
+			if (notTheEnd) {
+				//writeline("}");
+				writeline("end),");
+				tabs += "\t";
+            }
+            else
+            {
+				writeline("end)");
+				tabs += "\t";
+			}
+		}
+		
 		/// <summary>
 		/// Step done before decoding, getting the variables types
 		/// Aswell as getting the list of instructions
@@ -397,7 +433,8 @@ namespace Decompiler
 			startsw:
 			if (Instructions[Offset].GetJumpOffset == tempsw.breakoffset)
 			{
-				writeline("break;");
+				//writeline("break;");
+				closetabcaselua();//negbook
 				return;
 			}
 			else
@@ -516,7 +553,7 @@ namespace Decompiler
 						SwitchStatement temp = OuterSwitch;
 						OuterSwitch = OuterSwitch.Parent;
 						OuterSwitch.ChildSwitches.Remove(temp);
-						closetab();
+						cloasetabswitchlua();
 						//go check if its the next switch exit instruction
 						//probably isnt and the goto can probably be removed
 						goto start;
@@ -530,9 +567,11 @@ namespace Decompiler
 						{
 							string temp = OuterSwitch.Cases[OuterSwitch.Offsets[0]][i];
 							if (temp == "default")
-								writeline("default:");
+								//writeline("default:");
+								writeline("default(function()");
 							else
-								writeline("case " + temp + ":");
+								//writeline("case " + temp + ":");
+								writeline("case (" + temp + ")(function()");
 						}
 						opentab(false);
 
@@ -653,11 +692,14 @@ namespace Decompiler
 			}
 
 			//Found all information about switch, write the first case, the rest will be handled when we get to them
-			writeline("switch (" + Stack.PopLit() + ")");
-			opentab();
+			//writeline("switch (" + Stack.PopLit() + ")");
+			writeline("switch (" + Stack.PopLit() + ")(");
+			//opentab();
+			opentab(false);
 			for (int i = 0; i < cases[sorted[0]].Count; i++)
 			{
-				writeline("case " + cases[sorted[0]][i] + ":");
+				//writeline("case " + cases[sorted[0]][i] + ":");
+				writeline("case (" + cases[sorted[0]][i] + ")(function()");
 			}
 			opentab(false);
 			cases.Remove(sorted[0]);
@@ -684,7 +726,7 @@ namespace Decompiler
 			{
 				if (offset == tempcp.EndOffset)
 				{
-					writeline("if " + tempstring);
+					writeline("if " + tempstring + " then");
 					opentab(false);
 					writeline("break;");
 					closetab(false);
@@ -704,9 +746,9 @@ namespace Decompiler
 				jumploc.NopInstruction();
 				if (tempstring == "(1)")
 					tempstring = "(true)";
-				writeline("while " + tempstring);
+				writeline("while " + tempstring + " do");
 				Outerpath = Outerpath.CreateCodePath(CodePathType.While, Instructions[Offset].GetJumpOffset, -1);
-				opentab();
+				opentab(false);
 			}
 			else
 			{
@@ -720,8 +762,9 @@ namespace Decompiler
 						Outerpath = Outerpath.Parent;
 						Outerpath.ChildPaths.Remove(temp);
 						Outerpath = Outerpath.CreateCodePath(CodePathType.If, Instructions[Offset].GetJumpOffset, -1);
-						writeline("else if " + tempstring);
-						opentab();
+						//writeline("else if " + tempstring + " then");
+						writeline("elseif " + tempstring + " then");
+						opentab(false);
 						written = true;
 					}
 					else if (Instructions[InstructionMap[Instructions[Offset].GetJumpOffset] - 1].Instruction == Instruction.Jump)
@@ -733,17 +776,18 @@ namespace Decompiler
 							Outerpath = Outerpath.Parent;
 							Outerpath.ChildPaths.Remove(temp);
 							Outerpath = Outerpath.CreateCodePath(CodePathType.If, Instructions[Offset].GetJumpOffset, -1);
-							writeline("else if " + tempstring);
-							opentab();
+							//writeline("else if " + tempstring + " then");
+							writeline("elseif " + tempstring + " then");
+							opentab(false);
 							written = true;
 						}
 					}
 				}
 				if (!written)
 				{
-					writeline("if " + tempstring);
-					Outerpath = Outerpath.CreateCodePath(CodePathType.If, Instructions[Offset].GetJumpOffset, -1);
-					opentab();
+					writeline("if " + tempstring + " then");
+					Outerpath = Outerpath.CreateCodePath(CodePathType.If, Instructions[Offset].GetJumpOffset, -1);	
+					opentab(false);
 				}
 			}
 		}
@@ -1475,7 +1519,8 @@ namespace Decompiler
 				ReturnType = Types.gettype(Stack.DataType.Int);
 				return;
 			}
-			if (temp.StartsWith("joaat("))
+			//if (temp.StartsWith("joaat("))
+			if (temp.StartsWith("`"))
 			{
 				ReturnType = Types.gettype(Stack.DataType.Int);
 				return;

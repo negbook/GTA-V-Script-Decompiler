@@ -64,6 +64,9 @@ namespace Decompiler
 				switch (Program.getIntType)
 				{
 					case Program.IntType._int:
+						_stack.Add(new StackValue(StackValue.Type.Literal, Hashes.inttohex_special(value), DataType.Int));
+						break;
+					//negbook
 					case Program.IntType._hex:
 						_stack.Add(new StackValue(StackValue.Type.Literal, Hashes.inttohex(value), DataType.Int));
 						break;
@@ -84,7 +87,8 @@ namespace Decompiler
 		{
 			if (Variable.Immediatesize > 1)
 			{
-				value += ".f_0";
+				//value += ".f_0";
+				value += "[\"pf_0\"]";
 			}
 			_stack.Add(new StackValue(StackValue.Type.Literal, value, Variable));
 		}
@@ -96,7 +100,8 @@ namespace Decompiler
 
 		public void Push(float value)
 		{
-			_stack.Add(new StackValue(StackValue.Type.Literal, value.ToString() + "f", DataType.Float));
+			//_stack.Add(new StackValue(StackValue.Type.Literal, value.ToString() + "f", DataType.Float));
+			_stack.Add(new StackValue(StackValue.Type.Literal, value.ToString() + "", DataType.Float));
 		}
 
 		public void PushPointer(string value)
@@ -783,6 +788,7 @@ namespace Decompiler
 
 		public void Op_Not()
 		{
+			/*
 			string s1;
 			s1 = PopLit();
 			if (s1.StartsWith("!(") && s1.EndsWith(")"))
@@ -798,6 +804,22 @@ namespace Decompiler
 			}
 			else
 				PushCond("!(" + s1 + ")");
+			*/
+			string s1;
+			s1 = PopLit();
+			if (s1.StartsWith("not (") && s1.EndsWith(")"))
+				PushCond(s1.Remove(s1.Length - 1).Substring(2));
+			else if (s1.StartsWith("(") && s1.EndsWith(")"))
+				PushCond("not " + s1);
+			else if (!(s1.Contains("and") && s1.Contains("or") && s1.Contains("^")))
+			{
+				if (s1.StartsWith("not"))
+					PushCond(s1.Substring(1));
+				else
+					PushCond("not " + s1);
+			}
+			else
+				PushCond("not (" + s1 + ")");
 		}
 
 		public void Op_Neg()
@@ -828,7 +850,8 @@ namespace Decompiler
 			string s1, s2;
 			s1 = PopLit();
 			s2 = PopLit();
-			PushCond(s2 + " != " + s1);
+			//PushCond(s2 + " != " + s1);
+			PushCond(s2 + " ~= " + s1);
 		}
 
 		public void Op_CmpGE()
@@ -918,16 +941,19 @@ namespace Decompiler
 
 		public void Op_Itof()
 		{
-			Push("IntToFloat(" + PopLit() + ")", DataType.Float);
+			//Push("IntToFloat(" + PopLit() + ")", DataType.Float);
+			Push("(" + PopLit() + ") + 0.0", DataType.Float);
 		}
 
 		public void Op_FtoI()
 		{
-			Push("FloatToInt(" + PopLit() + ")", DataType.Int);
+			//Push("FloatToInt(" + PopLit() + ")", DataType.Int);
+			Push("math.floor(" + PopLit() + ")", DataType.Int);
 		}
 
 		public void Op_And()
 		{
+			/*
 			StackValue s1 = Pop();
 			StackValue s2 = Pop();
 			int temp;
@@ -939,10 +965,23 @@ namespace Decompiler
 				Push(s2.Value + " & " + s1.Value, DataType.Int);
 			else
 				Push("(" + s2.Value + " && " + s1.Value + ")");
+			*/
+			StackValue s1 = Pop();
+			StackValue s2 = Pop();
+			int temp;
+			if (s1.ItemType != StackValue.Type.Literal && s1.ItemType != StackValue.Type.Literal)
+				throw new Exception("Not a literal item recieved");
+			if (s1.Datatype == DataType.Bool || s2.Datatype == DataType.Bool)
+				PushCond("(" + s2.Value + " and " + s1.Value + ")");
+			else if (Utils.IntParse(s1.Value, out temp) || Utils.IntParse(s2.Value, out temp))
+				Push(s2.Value + " & " + s1.Value, DataType.Int);
+			else
+				Push("(" + s2.Value + " and " + s1.Value + ")");
 		}
 
 		public void Op_Or()
 		{
+			/*
 			StackValue s1 = Pop();
 			StackValue s2 = Pop();
 			int temp;
@@ -954,6 +993,18 @@ namespace Decompiler
 				Push(s2.Value + " | " + s1.Value, DataType.Int);
 			else
 				Push("(" + s2.Value + " || " + s1.Value + ")");
+			*/
+			StackValue s1 = Pop();
+			StackValue s2 = Pop();
+			int temp;
+			if (s1.ItemType != StackValue.Type.Literal && s1.ItemType != StackValue.Type.Literal)
+				throw new Exception("Not a literal item recieved");
+			if (s1.Datatype == DataType.Bool || s2.Datatype == DataType.Bool)
+				PushCond("(" + s2.Value + " or " + s1.Value + ")");
+			else if (Utils.IntParse(s1.Value, out temp) || Utils.IntParse(s2.Value, out temp))
+				Push(s2.Value + " | " + s1.Value, DataType.Int);
+			else
+				Push("(" + s2.Value + " or " + s1.Value + ")");
 		}
 
 		public void Op_Xor()
@@ -966,11 +1017,19 @@ namespace Decompiler
 
 		string PopStructAccess()
 		{
+			/*
 			StackValue val = Pop();
 			if(val.ItemType == StackValue.Type.Pointer)
 				return val.Value + ".";
 			else if(val.ItemType == StackValue.Type.Literal)
 				return (val.Value.Contains(" ") ? "(" + val.Value + ")" : val.Value) + "->";
+			throw new Exception("Not a pointer item recieved");
+			*/
+			StackValue val = Pop();
+			if (val.ItemType == StackValue.Type.Pointer)
+				return val.Value + "";
+			else if (val.ItemType == StackValue.Type.Literal)
+				return (val.Value.Contains(" ") ? "(" + val.Value + ")" : val.Value) + "";
 			throw new Exception("Not a pointer item recieved");
 		}
 
@@ -989,12 +1048,14 @@ namespace Decompiler
 			//	}
 			//}
 			Push(new StackValue(StackValue.Type.Literal,
-				PopStructAccess() + "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString())));
+				//PopStructAccess() + "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString())));
+				PopStructAccess() + "[\"pf_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString()) + "\"]"));
 		}
 
 		public string Op_SetImm(uint immediate)
 		{
-			string imm = "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString());
+			//string imm = "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString());
+			string imm = "[\"pf_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString()) + "\"]";
 			//if (PeekVar(0) != null)
 			//{
 			//	if (PeekVar(0).Immediatesize == 3)
@@ -1017,7 +1078,8 @@ namespace Decompiler
 
 		public void Op_GetImmP(uint immediate)
 		{
-			Push(new StackValue(StackValue.Type.Pointer,PopStructAccess() + "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString())));
+			//Push(new StackValue(StackValue.Type.Pointer,PopStructAccess() + "f_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString())));
+			Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "[\"pf_" + (Program.Hex_Index ? immediate.ToString("X") : immediate.ToString())+"\"]"));
 		}
 
 		public void Op_GetImmP()
@@ -1026,11 +1088,13 @@ namespace Decompiler
 			int temp;
 			if (Utils.IntParse(immediate, out temp))
 			{
-				Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "f_" + (Program.Hex_Index ? temp.ToString("X") : temp.ToString())));
+				//Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "f_" + (Program.Hex_Index ? temp.ToString("X") : temp.ToString())));
+				Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "[\"pf_"  + (Program.Hex_Index ? temp.ToString("X") : temp.ToString()) + "\"]"));
 			}
 			else
 			{
-				Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "f_[" + immediate + "]"));
+				//Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "f_[" + immediate + "]"));
+				Push(new StackValue(StackValue.Type.Pointer, PopStructAccess() + "[\"pf_" + immediate + "]" + "\"]"));
 			}
 
 		}
@@ -1321,7 +1385,8 @@ namespace Decompiler
 		{
 			if (Variable.Immediatesize > 1)
 			{
-				location += ".f_0";
+				//location += ".f_0";
+				location += "[\"pf_0\"]";
 			}
 			return Op_Set(location);
 		}
@@ -1335,28 +1400,32 @@ namespace Decompiler
 		{
 			string pointer = PopPointer();
 			string pointer2 = PopPointer();
-			return "StringCopy(" + pointer + ", " + pointer2 + ", " + size.ToString() + ");";
+			//return "StringCopy(" + pointer + ", " + pointer2 + ", " + size.ToString() + ");";
+			return pointer + " = " + pointer2 + " --[=[StringCopy--]=]";
 		}
 
 		public string op_stradd(int size)
 		{
 			string pointer = PopPointer();
 			string pointer2 = PopPointer();
-			return "StringConCat(" + pointer + ", " + pointer2 + ", " + size.ToString() + ");";
+			//return "StringConCat(" + pointer + ", " + pointer2 + ", " + size.ToString() + ");";
+			return pointer + " = " + "table.concat({" + pointer + ", " + pointer2 +  "});" + " --[=[StringConCat--]=]";
 		}
 
 		public string op_straddi(int size)
 		{
 			string pointer = PopPointer();
 			string inttoadd = PopLit();
-			return "StringIntConCat(" + pointer + ", " + inttoadd + ", " + size.ToString() + ");";
+			//return "StringIntConCat(" + pointer + ", " + inttoadd + ", " + size.ToString() + ");";
+			return pointer + " = " + "table.concat({" + pointer + ", " + inttoadd + "});" + " --[=[StringIntConCat--]=]";
 		}
 
 		public string op_itos(int size)
 		{
 			string pointer = PopPointer();
 			string intval = PopLit();
-			return "IntToString(" + pointer + ", " + intval + ", " + size.ToString() + ");";
+			//return "IntToString(" + pointer + ", " + intval + ", " + size.ToString() + ");";
+			return "tostring(" + pointer + ", " + intval + ", " + size.ToString() + ");";
 		}
 
 		public string op_sncopy()
@@ -1399,11 +1468,14 @@ namespace Decompiler
 			if (newval == "1" || newval == "1f")
 			{
 				if (op == "+")
-					return loc + "++;";
+					return loc + " = " + loc + " + 1;";
+				//return loc + "++;";
 				if (op == "-")
-					return loc + "--;";
+					return loc + " = " + loc + " - 1;";
+				//return loc + "--;";
 			}
-			return loc + " " + op + "= " + newval + ";";
+			//return loc + " " + op + "= " + newval + ";";
+			return loc + " = " + loc + op + " " + newval + ";";
 		}
 
 		#endregion
@@ -1617,18 +1689,32 @@ namespace Decompiler
 	{
 		public static DataTypes[] _types = new DataTypes[]
 		{
-			/*  0 */ new DataTypes(Stack.DataType.Bool, 4, "bool", "b"), //needs fixing up a bit
-			/*  1 */ new DataTypes(Stack.DataType.Float, 3, "float", "f"),
-			/*  2 */ new DataTypes(Stack.DataType.Int, 3, "int", "i"),
-			/*  3 */ new DataTypes(Stack.DataType.String, 3, "char[]", "c"),
-			/*  4 */ new DataTypes(Stack.DataType.StringPtr, 3, "char*", "s"),
-			/*  5 */ new DataTypes(Stack.DataType.Unk, 0, "var", "u"),
-			/*  6 */ new DataTypes(Stack.DataType.Unsure, 1, "var", "u"),
-			/*  7 */ new DataTypes(Stack.DataType.IntPtr, 3, "int*", "i"),
-			/*  8 */ new DataTypes(Stack.DataType.UnkPtr, 1, "var*", "u"),
-			/*  9 */ new DataTypes(Stack.DataType.FloatPtr, 3, "float*", "f"),
-			/* 10 */ new DataTypes(Stack.DataType.Vector3, 2, "Vector3", "v"),
-			/* 11 */ new DataTypes(Stack.DataType.None, 4, "void", "f"),
+			/*
+			 new DataTypes(Stack.DataType.Bool, 4, "bool", "b"), //needs fixing up a bit
+			 new DataTypes(Stack.DataType.Float, 3, "float", "f"),
+			 new DataTypes(Stack.DataType.Int, 3, "int", "i"),
+			 new DataTypes(Stack.DataType.String, 3, "char[]", "c"),
+			 new DataTypes(Stack.DataType.StringPtr, 3, "char*", "s"),
+			 new DataTypes(Stack.DataType.Unk, 0, "var", "u"),
+			 new DataTypes(Stack.DataType.Unsure, 1, "var", "u"),
+			 new DataTypes(Stack.DataType.IntPtr, 3, "int*", "i"),
+			 new DataTypes(Stack.DataType.UnkPtr, 1, "var*", "u"),
+			 new DataTypes(Stack.DataType.FloatPtr, 3, "float*", "f"),
+			 new DataTypes(Stack.DataType.Vector3, 2, "Vector3", "v"),
+			 new DataTypes(Stack.DataType.None, 4, "void", "f"),
+			*/
+			new DataTypes(Stack.DataType.Bool, 4,           "local" , ""), //needs fixing up a bit
+			new DataTypes(Stack.DataType.Float, 3,          "local" , ""),
+			new DataTypes(Stack.DataType.Int, 3,            "local" , ""),
+			new DataTypes(Stack.DataType.String, 3,         "local" , ""),
+			new DataTypes(Stack.DataType.StringPtr, 3,      "local" , ""),
+			new DataTypes(Stack.DataType.Unk, 0,            "local" , ""),
+			new DataTypes(Stack.DataType.Unsure, 1,         "local" , ""),
+			new DataTypes(Stack.DataType.IntPtr, 3,         "local" , ""),
+			new DataTypes(Stack.DataType.UnkPtr, 1,         "local" , ""),
+			new DataTypes(Stack.DataType.FloatPtr, 3,       "local" , ""),
+			new DataTypes(Stack.DataType.Vector3, 2,        "local" , ""),
+			new DataTypes(Stack.DataType.None, 4,           "local" , ""),
 		};
 
 		public static DataTypes gettype(Stack.DataType type)

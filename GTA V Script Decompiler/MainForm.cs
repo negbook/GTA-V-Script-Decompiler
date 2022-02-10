@@ -579,6 +579,7 @@ namespace Decompiler
 						switch (type.ToLower())
 						{
 							case "void":
+							case "function":
 							case "var":
 							case "float":
 							case "bool":

@@ -73,7 +73,8 @@ namespace Decompiler
 			if (!Program.Reverse_Hashes)
 				return inttohex(value);
 			if (hashes.ContainsKey(value))
-				return "joaat(\"" + hashes[value] + "\")";
+				//return "joaat(\"" + hashes[value] + "\")";
+				return "`" + hashes[value] + "`";
 			return inttohex(value) + temp;
 		}
 
@@ -83,7 +84,8 @@ namespace Decompiler
 				return value.ToString();
 			int intvalue = (int) value;
 			if (hashes.ContainsKey(intvalue))
-				return "joaat(\"" + hashes[intvalue] + "\")";
+				//return "joaat(\"" + hashes[intvalue] + "\")";
+				return "`" + hashes[intvalue] + "`";
 			return value.ToString() + temp;
 		}
 
@@ -95,6 +97,17 @@ namespace Decompiler
 		public static string inttohex(int value)
 		{
 			if (Program.getIntType == Program.IntType._hex)
+			{
+				string s = value.ToString("X");
+				while (s.Length < 8) s = "0" + s;
+				return "0x" + s;
+			}
+			return value.ToString();
+		}
+
+		public static string inttohex_special(int value)
+		{
+			if (value > 65534 || value < -65534)
 			{
 				string s = value.ToString("X");
 				while (s.Length < 8) s = "0" + s;

@@ -170,7 +170,7 @@ namespace Decompiler
             {
                 name = "__EntryFunction__";
             }
-            else name = "func_" + Functions.Count.ToString();
+            else name = "func_" + Functions.Count.ToString() +"_c";
             int pcount = CodeTable[offset + 1];
             int tmp1 = CodeTable[offset + 2], tmp2 = CodeTable[offset + 3];
             int vcount = ((ConsoleVer)? (tmp1 << 0x8) | tmp2 : (tmp2 << 0x8) | tmp1) ;

@@ -29,14 +29,16 @@ namespace Decompiler
 			switch (type)
 			{
 				case Stack.DataType.Float:
-					return BitConverter.ToSingle(BitConverter.GetBytes(value), 0).ToString() + "f";
+					//return BitConverter.ToSingle(BitConverter.GetBytes(value), 0).ToString() + "f";
+					return BitConverter.ToSingle(BitConverter.GetBytes(value), 0).ToString() + ".0";
 				case Stack.DataType.Bool:
 					break;//return value == 0 ? "false" : "true";				//still need to fix bools
 				case Stack.DataType.FloatPtr:
 				case Stack.DataType.IntPtr:
 				case Stack.DataType.StringPtr:
 				case Stack.DataType.UnkPtr:
-					return "NULL";
+					//return "NULL";
+					return "nil";
 			}
 			if (value > Int32.MaxValue && value <= UInt32.MaxValue)
 				return ((int) ((uint) value)).ToString();
