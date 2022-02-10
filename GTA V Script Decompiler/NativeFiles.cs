@@ -47,13 +47,15 @@ namespace Decompiler
 					{
 						if (!ContainsKey(value))
 						{
+							var n0x = false;
 							string nat = (Program.Show_Nat_Namespace ? (data[1] + "::") : "");
 							if(Program.Upper_Natives)
 							{
 								nat = nat.ToUpper();
 								if(data[2].StartsWith("_0x"))
 								{
-									nat += data[2].Remove(3) + data[2].Substring(3).ToUpper();
+									nat +=  data[2].Remove(0) + data[2].Substring(3).ToUpper() ;
+									n0x = true;
 								}
 								else
 								{
@@ -65,15 +67,38 @@ namespace Decompiler
 								nat = nat.ToLower();
 								if(data[2].StartsWith("_0x"))
 								{
-									nat += data[2].Remove(3) + data[2].Substring(3).ToUpper();
+									nat +=  data[2].Remove(0) + data[2].Substring(3).ToLower();
+									n0x = true;
 								}
 								else
 								{
-									nat += data[2].ToLower();
+
+
+									TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
+									data[2] = myTI.ToTitleCase(data[2].ToLower());
+									nat += data[2];
+
 								}
 							}
-							Add(value, nat);
-							revmap.Add(nat, value);
+							if (n0x)
+                            {
+								nat = "N_0x" + nat.Replace("_", "");
+							}
+							else
+                            {
+								nat = nat.Replace("_", "");
+							}
+							
+								Add(value, nat);
+							if (!revmap.ContainsKey(nat))
+							{
+								revmap.Add(nat, value);
+							}
+							else
+							{
+								Console.WriteLine(nat);
+							}
+
 						}
 					}
 				}
@@ -128,12 +153,14 @@ namespace Decompiler
 					if (ulong.TryParse(val, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
 					{
 						string nat = (Program.Show_Nat_Namespace ? (data[1] + "::") : "");
+						var n0x = false;
 						if(Program.Upper_Natives)
 						{
 							nat = nat.ToUpper();
 							if(data[2].StartsWith("_0x"))
 							{
-								nat += data[2].Remove(3) + data[2].Substring(3).ToUpper();
+								nat +=  data[2].Remove(0) + data[2].Substring(3).ToUpper();
+								n0x = true;
 							}
 							else
 							{
@@ -145,17 +172,35 @@ namespace Decompiler
 							nat = nat.ToLower();
 							if(data[2].StartsWith("_0x"))
 							{
-								nat += data[2].Remove(3) + data[2].Substring(3).ToUpper();
+								nat +=  data[2].Remove(0) + data[2].Substring(3).ToLower() ;
+								n0x = true;
 							}
 							else
 							{
-								nat += data[2].ToLower();
+								TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
+								data[2] = myTI.ToTitleCase(data[2].ToLower());
+								nat += data[2];
 							}
+						}
+						if (n0x)
+						{
+							nat = "N_0x" + nat.Replace("_", "");
+						}
+						else
+						{
+							nat = nat.Replace("_", "");
 						}
 						if (!ContainsKey(value))
 						{
 							Add(value, nat);
-							revmap.Add(nat, value);
+							if (!revmap.ContainsKey(nat))
+							{
+								revmap.Add(nat, value);
+							}
+                            else
+                            {
+								Console.WriteLine(nat);
+                            }
 						}
 					}
 				}

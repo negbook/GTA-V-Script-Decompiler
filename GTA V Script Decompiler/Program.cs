@@ -31,7 +31,7 @@ namespace Decompiler
 				Config.IniWriteBool("Base", "Show_Func_Pointer", false);
 				Config.IniWriteBool("Base", "Use_MultiThreading", true);
 				Config.IniWriteBool("Base", "Include_Function_Position", false);
-				Config.IniWriteBool("Base", "Uppercase_Natives", true);
+				Config.IniWriteBool("Base", "Uppercase_Natives", false);
 				Config.IniWriteBool("Base", "Hex_Index", false);
 				Config.IniWriteBool("View", "Line_Numbers", true);
 			}
